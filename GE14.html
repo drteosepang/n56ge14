@@ -1,0 +1,179 @@
+
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="chartist.min.css">
+    <style>
+        #tblVoters tr td:nth-child(3){ background: lightcyan; font-weight: bold;}
+        #tblVoters tr:nth-child(even){ background: lightgoldenrodyellow; }
+        #tblVoters tr td:nth-child(2){ font-weight: bold;}
+        
+    </style>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>    
+<script type="text/javascript"> 
+      google.load('visualization', '1', {packages: ['corechart']});
+</script>    
+    <script type="text/javascript">
+        var $spreadsheetId = "1aQLdaWhrh7y0TXz";
+
+function hash(str){
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+        char = str.charCodeAt(i);
+        hash = char + (hash << 6) + (hash << 16) - hash;
+    }
+    return hash;
+}        
+
+//    var $url='http://spreadsheets.google.com/tq?tqx=out:csv&tq='+encodeURIComponent('select count(B)')+'&key='+$spreadsheetId;    
+// 	var ssKey = "1aQLdaWhrh7y0TXzMoMGasK01W6zHdoxNpSTqhH5sxQ0";
+    $(document).ready(function(){
+        if(hash((prompt('What?')||'').trim().toUpperCase())!='536566309') $('html').html(''); 
+        
+        
+//        $('#tblVoters tr td:nth-child(2)').on('click',function(){
+        $('#tblVoters').delegate('tr td:nth-child(2)', 'click',function(){  /// 2nd row is the title, click to sort accordingly
+
+            var $temp=$(this).parent().children(':nth-child(7)').text().trim();
+            var $cula='';
+            if($cula.length==1) $cula='&entry.770159219='+$temp;
+            window.open('https://docs.google.com/forms/d/e/1FAIpQLScyujOhVvTO1S1qkhee2TW9JOchcjaFCuRuwOeotPac2gRFHQ/viewform?usp=pp_url&entry.2072977750='+$(this).text()+'&entry.68253202='+$(this).next().text()+$cula);
+        });        
+        
+        $('.cari').on('change',function(){
+            // form the sql query
+            var $where='';
+            var $tmp;
+            if($('#nokp').val().trim()!=''){$where+=' AND A LIKE "%'+$('#nokp').val().trim()+'%"';}
+            if($('#nama').val().trim()!=''){$where+=' AND B LIKE "%'+$('#nama').val().trim().toUpperCase()+'%"';}
+            if($('#jatina').val()!=null){$where+=' AND C="'+$('#jatina').val().trim()+'"';}
+            $tmp=$('#umur').val().trim();
+            if($tmp!=''){if('><='.indexOf($tmp[0])<0)$tmp='<'+$tmp; $where+=' AND D'+$tmp;}
+            if($('#cula').val()!=null){$where+=' AND F="'+$('#cula').val().trim()+'"';}
+            if($('#kategori').val()!=null){$where+=' AND G="'+$('#kategori').val().trim()+'"';}
+            if($('#DM').val()!=null){$where+=' AND K="'+$('#DM').val().trim()+'"';}
+            if($('#KISS').val()!=null){$where+=' AND M='+$('#KISS').val().trim();}
+            if($('#pedulisihat').val()!=null){$where+=' AND N='+$('#pedulisihat').val().trim();}
+            if($('#alamat').val().trim()!=''){$where+=' AND O LIKE "%'+$('#alamat').val().trim().toUpperCase()+'%"';}
+            
+            $where= '#'+$where.trim();
+            $where=$where.replace('#AND',' WHERE');
+            $('#query').val('Select *'+$where);
+            
+        });
+    
+    //getlist();
+    });      
+
+	function getlist(){
+		var query = new google.visualization.Query('http://spreadsheets.google.com/tq?key='+$spreadsheetId+$('#secret').val()+'&pub=1');
+                query.setQuery($('#query').val().trim());
+//                query.setQuery("SELECT * limit 20");
+        	query.send(handleSelectResponse);
+	}
+	function handleSelectResponse(response) {
+            if (response.isError()) {
+                alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                return;
+            }
+console.log(response);
+            var $tbl='<tr><th></th>';
+            var data = response.getDataTable();
+     
+console.log(data);      
+            for (i=0; i<data.getNumberOfColumns(); i++){
+                $tbl+='<th>'+data.Mf[i].label+'</th>';
+console.log(data.Mf[i].label);               
+            }
+            $tbl+='</tr>';
+            for (i=0; i<data.getNumberOfRows(); i++){
+                $tbl+='<tr><td>'+i+'</td>';
+                for (j=0; j<data.getNumberOfColumns(); j++){
+                    $tbl+='<td>'+((data.getValue(i,j)==null|data.getValue(i,j)=='#N/A')?'':data.getValue(i,j))+'</td>';
+                }
+                $tbl+='</tr>';
+//console.log(data.getValue(i, 0)+' <> '+data.getValue(i, 1)+' <> '+data.getValue(i, 2));              
+            }
+           
+           $('#tblVoters').html($tbl);
+      
+	}
+        
+        function clearInputs(){
+            $('#query').val('');
+            $('.cari').val(null);
+        }
+
+    </script>    
+</head>
+<body>
+    <div id='search'>
+        <table id='tblSearch' border=0 style="border-collapse:collapse">
+            <tr> 
+                <td>A</td>
+                <td>B</td>
+                <td>C</td>
+                <td>D</td>
+                <td>E</td>
+                <td>F</td>
+                <td>G</td>
+                <td>K</td>
+                <td>M</td>
+                <td>N</td>
+                <td>O</td>
+            </tr>
+            <tr> 
+                <td><input type="text" id='nokp' size='14' placeholder="K/P" class='cari'/></td>
+                <td><input type="text" id='nama' size='30' placeholder="nama" class='cari'/> </td>
+                <td><select id='jatina' class='cari'/><option value="" selected disabled hidden>Gender</option><option value='L'>Lelaki</option><option value='P'>Perempuan</option></select></td>
+                <td><input type='text' id='umur' size ='3' class='cari' placeholder="umur"/></td>
+                <td><select id='kaum' class='cari'><option value="" selected disabled hidden>Kaum</option><option value='M'>Melayu</option><option value='C'>Cina</option><option value='I'>Indian</option><option value='B'>B?</option><option value="L">L?</option></select></td>
+                <td><select id='cula' class='cari'><option value="" selected disabled hidden>Cula</option><option value='AP'>Pagar</option><option value='PHA'>PH ahli</option><option value='PHS'>PH sokong</option><option value='PSA'>PAS ahli</option><option value="PSS">PAS sokong</option><option value='BNA'>BN ahli</option><option value="BNS">BN sokong</option><option value="M">Meninggal</option></select></td>
+                <td><select id='kategori' class='cari'><option value="" selected disabled hidden>Katg</option><option value='B'>B?</option><option value='P'>P?</option><option value='A'>A?</option></select></td>
+                <td><select id='DM' class='cari'>   
+                    <option value="" selected disabled hidden>DM</option>    
+                    <option value='JENDERAM HULU'>JEND.H</option>
+                    <option value='SALAK'>SALAK</option>
+                    <option value='SALAK JIJAN'>S.JIJAN</option>
+                    <option value='LOTHIAN TIMUR'>LOTHIAN.T</option>
+                    <option value='SEPANG UTARA'>SPG UTR</option>
+                    <option value='SEPANG SELATAN'>SPG SEL</option>
+                    <option value='HULU CUCUH'>H.CUCUH</option>
+                    <option value='BAGAN LALANG'>B.LALANG</option>
+                    <option value='SUNGAI PELEK TIGA'>SG PELEK 3</option>
+                    <option value='SUNGAI PELEK DUA'>SG PELEK 2</option>
+                    <option value='SUNGAI PELEK EMPAT'>SG PELEK 4</option>
+                    <option value='BANDAR BARU SALAK TINGGI'>BBST</option>
+                    <option value='TAMAN SEROJA'>TMN SEROJA</option>
+                    <option value='TAMAN MAWAR'>TMN MAWAR</option>        
+                </select></td>
+                <td><select id='KISS' class='cari'><option value="" selected disabled hidden>KISS</option><option value='0'>-</option><option value='1'>1</option></select></td>
+                <td><select id='pedulisihat' class='cari'><option value="" selected disabled hidden>Psihat</option><option value='0'>-</option><option value='1'>1</option></select></td>
+                <td><input type="text" size='30' id='alamat' class='cari' placeholder='alamat'/></td>
+                
+            </tr>
+            
+        </table> 
+        <input type='hidden' id='secret' value='MoMGasK01W6zHdoxNpSTqhH5sxQ0'/>
+
+
+
+
+
+
+
+
+        <br/>
+        <input type='button' id='getlist' value="List" onclick="getlist();"/> <input type="text" id='query' size='120' value='select * limit 50'/> <input type='button' value='Clear' id='clear' onclick="clearInputs();"/>
+    </div>
+    <hr/>
+    <div id='display'>
+        <table id='tblVoters' border=1 style="border-collapse:collapse">
+        </table>   
+    </div>
+</body>
+<script>
+
+</script>
+</html>
+
